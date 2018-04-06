@@ -1,0 +1,478 @@
+From 58ddafafeeead2f5fabd7f85280b3882211f402b Mon Sep 17 00:00:00 2001
+From: Loic Devulder <ldevulder@suse.de>
+Date: Tue, 20 Mar 2018 18:18:23 +0100
+Subject: [PATCH] ScummVM BASS test
+
+Test for Programmez! article part 2
+---
+ products/opensuse/main.pm             | 23 +++++++++-
+ tests/scummvm/add_game.pm             | 38 ++++++++++++++++
+ tests/scummvm/disable_pkgkit.pm       | 37 ++++++++++++++++
+ tests/scummvm/install_game.pm         | 44 +++++++++++++++++++
+ tests/scummvm/install_scummvm.pm      | 31 +++++++++++++
+ tests/scummvm/start_scummvm.pm        | 24 ++++++++++
+ tests/scummvm/start_scummvm_v2.pm     | 28 ++++++++++++
+ tests/scummvm/test_game-fullscreen.pm | 83 +++++++++++++++++++++++++++++++++++
+ tests/scummvm/test_game.pm            | 75 +++++++++++++++++++++++++++++++
+ 9 files changed, 382 insertions(+), 1 deletion(-)
+ create mode 100644 tests/scummvm/add_game.pm
+ create mode 100644 tests/scummvm/disable_pkgkit.pm
+ create mode 100644 tests/scummvm/install_game.pm
+ create mode 100644 tests/scummvm/install_scummvm.pm
+ create mode 100644 tests/scummvm/start_scummvm.pm
+ create mode 100644 tests/scummvm/start_scummvm_v2.pm
+ create mode 100644 tests/scummvm/test_game-fullscreen.pm
+ create mode 100644 tests/scummvm/test_game.pm
+
+diff --git a/products/opensuse/main.pm b/products/opensuse/main.pm
+index 804be48f..ba7ef2d1 100644
+--- a/products/opensuse/main.pm
++++ b/products/opensuse/main.pm
+@@ -400,7 +400,6 @@ elsif (get_var('GNUHEALTH')) {
+     loadtest 'gnuhealth/tryton_preconfigure';
+     loadtest 'gnuhealth/tryton_first_time';
+ }
+-
+ elsif (is_rescuesystem) {
+     loadtest "installation/rescuesystem";
+     loadtest "installation/rescuesystem_validate_131";
+@@ -465,6 +464,28 @@ elsif (get_var('DOCKER_IMAGE_TEST')) {
+     load_docker_tests;
+     loadtest 'console/docker_image';
+ }
++elsif (get_var('SCUMMVM')) {
++    # ScummVM test - for fun!
++    boot_hdd_image;
++    loadtest "console/consoletest_setup";
++    loadtest "scummvm/disable_pkgkit" if !get_var('ALT_SCUMMVM_INSTALL');
++    loadtest "scummvm/install_game";
++    if (get_var('ALT_SCUMMVM_INSTALL')) {
++        loadtest "scummvm/start_scummvm_v2";
++    }
++    else {
++        loadtest "scummvm/install_scummvm";
++        loadtest "scummvm/start_scummvm";
++    }
++    loadtest "scummvm/add_game";
++    if (get_var('SCUMMVM_FULLSCREEN')) {
++        loadtest "scummvm/test_game-fullscreen";
++    }
++    else {
++        loadtest "scummvm/test_game";
++    }
++    loadtest "x11/shutdown";
++}
+ else {
+     if (get_var("LIVETEST") || get_var('LIVE_INSTALLATION')) {
+         load_boot_tests();
+diff --git a/tests/scummvm/add_game.pm b/tests/scummvm/add_game.pm
+new file mode 100644
+index 00000000..f74a2b4d
+--- /dev/null
++++ b/tests/scummvm/add_game.pm
+@@ -0,0 +1,38 @@
++# SUSE's openQA tests
++#
++# Copyright (c) 2018 SUSE LLC
++#
++# Copying and distribution of this file, with or without modification,
++# are permitted in any medium without royalty provided the copyright
++# notice and this notice are preserved.  This file is offered as-is,
++# without any warranty.
++
++# Summary: add the game
++# Maintainer: Loic Devulder <ldevulder@suse.com>
++
++use base 'opensusebasetest';
++use strict;
++use testapi;
++
++sub run {
++    # To be sure that ScummVM is started
++    assert_screen 'scummvm-main-menu';
++
++    # Add the game
++    assert_and_click 'scummvm-select-add-game';
++    assert_screen 'scummvm-add-game';
++    assert_and_dclick 'scummvm-select-game-directory';
++    assert_and_dclick 'scummvm-select-bass-directory';
++    assert_and_click 'scummvm-select-choose';
++    assert_and_click 'scummvm-select-graphics';
++    assert_and_click 'scummvm-override-graphics-settings';
++    assert_and_click 'scummvm-select-graphic-mode';
++    assert_and_click 'scummvm-select-enhanced-mode';
++    assert_and_click 'scummvm-select-fullscreen-mode' if get_var 'SCUMMVM_FULLSCREEN';
++    assert_and_click 'scummvm-select-ok';
++    assert_screen 'scummvm-bass-game';
++    save_screenshot;
++}
++
++1;
++# vim: set sw=4 et:
+diff --git a/tests/scummvm/disable_pkgkit.pm b/tests/scummvm/disable_pkgkit.pm
+new file mode 100644
+index 00000000..4026ff0b
+--- /dev/null
++++ b/tests/scummvm/disable_pkgkit.pm
+@@ -0,0 +1,37 @@
++# SUSE's openQA tests
++#
++# Copyright (c) 2018 SUSE LLC
++#
++# Copying and distribution of this file, with or without modification,
++# are permitted in any medium without royalty provided the copyright
++# notice and this notice are preserved.  This file is offered as-is,
++# without any warranty.
++
++# Summary: prepare the VM
++# Maintainer: Loic Devulder <ldevulder@suse.com>
++
++use base 'opensusebasetest';
++use strict;
++use testapi;
++use utils 'pkcon_quit';
++
++sub run {
++    # Select x11 console (just to be sure)
++    select_console 'x11';
++
++    # Sometimes the mouse cursor can disturb the assert_* mechanism
++    mouse_hide;
++
++    # Execute xterm as root user
++    x11_start_program 'xterm';
++    become_root;
++
++    # Deactivate PackageKit, we don't want to have a warning screen about needed updates :)
++    pkcon_quit;
++
++    # Close the xterm console
++    wait_screen_change { send_key 'alt-f4'; };
++}
++
++1;
++# vim: set sw=4 et:
+diff --git a/tests/scummvm/install_game.pm b/tests/scummvm/install_game.pm
+new file mode 100644
+index 00000000..24580956
+--- /dev/null
++++ b/tests/scummvm/install_game.pm
+@@ -0,0 +1,44 @@
++# SUSE's openQA tests
++#
++# Copyright (c) 2018 SUSE LLC
++#
++# Copying and distribution of this file, with or without modification,
++# are permitted in any medium without royalty provided the copyright
++# notice and this notice are preserved.  This file is offered as-is,
++# without any warranty.
++
++# Summary: install the game
++# Maintainer: Loic Devulder <ldevulder@suse.com>
++
++use base 'opensusebasetest';
++use strict;
++use testapi;
++
++sub run {
++    my $timeout      = 300;    # Max waiting time
++    my $download_dir = '~/Downloads';
++    my $install_dir  = '~/Games';
++    my $game_url     = 'http://scummvm.org/frs/extras/Beneath%20a%20Steel%20Sky/bass-cd-1.2.zip';
++    my $game_file    = "$download_dir/bass.zip";
++
++    # Select x11 console (just to be sure)
++    select_console 'x11';
++
++    # Execute xterm as normal user
++    x11_start_program 'xterm';
++
++    # Create the needed directories
++    assert_script_run "mkdir -p $download_dir $install_dir";
++
++    # Get the game
++    assert_script_run "wget -c $game_url -O $game_file", timeout => $timeout;
++
++    # Install the game
++    assert_script_run "unzip $game_file -d $install_dir", timeout => $timeout;
++
++    # Close the xterm console
++    wait_screen_change { send_key 'alt-f4'; };
++}
++
++1;
++# vim: set sw=4 et:
+diff --git a/tests/scummvm/install_scummvm.pm b/tests/scummvm/install_scummvm.pm
+new file mode 100644
+index 00000000..7dd98b0a
+--- /dev/null
++++ b/tests/scummvm/install_scummvm.pm
+@@ -0,0 +1,31 @@
++# SUSE's openQA tests
++#
++# Copyright (c) 2018 SUSE LLC
++#
++# Copying and distribution of this file, with or without modification,
++# are permitted in any medium without royalty provided the copyright
++# notice and this notice are preserved.  This file is offered as-is,
++# without any warranty.
++
++# Summary: install the ScummVM game engine
++# Maintainer: Loic Devulder <ldevulder@suse.com>
++
++use base 'opensusebasetest';
++use strict;
++use testapi;
++use utils 'zypper_call';
++
++sub run {
++    # Execute xterm as root user
++    x11_start_program 'xterm';
++    become_root;
++
++    # Install ScummVM using the zypper_call function
++    zypper_call 'in scummvm';
++
++    # Close the xterm console
++    wait_screen_change { send_key 'alt-f4'; };
++}
++
++1;
++# vim: set sw=4 et:
+diff --git a/tests/scummvm/start_scummvm.pm b/tests/scummvm/start_scummvm.pm
+new file mode 100644
+index 00000000..aac89e48
+--- /dev/null
++++ b/tests/scummvm/start_scummvm.pm
+@@ -0,0 +1,24 @@
++# SUSE's openQA tests
++#
++# Copyright (c) 2018 SUSE LLC
++#
++# Copying and distribution of this file, with or without modification,
++# are permitted in any medium without royalty provided the copyright
++# notice and this notice are preserved.  This file is offered as-is,
++# without any warranty.
++
++# Summary: start ScummVM game engine (v1 version)
++# Maintainer: Loic Devulder <ldevulder@suse.com>
++
++use base 'opensusebasetest';
++use strict;
++use testapi;
++
++sub run {
++    # Execute ScummVM as normal user
++    x11_start_program 'scummvm';
++    save_screenshot;
++}
++
++1;
++# vim: set sw=4 et:
+diff --git a/tests/scummvm/start_scummvm_v2.pm b/tests/scummvm/start_scummvm_v2.pm
+new file mode 100644
+index 00000000..b71278ba
+--- /dev/null
++++ b/tests/scummvm/start_scummvm_v2.pm
+@@ -0,0 +1,28 @@
++# SUSE's openQA tests
++#
++# Copyright (c) 2018 SUSE LLC
++#
++# Copying and distribution of this file, with or without modification,
++# are permitted in any medium without royalty provided the copyright
++# notice and this notice are preserved.  This file is offered as-is,
++# without any warranty.
++
++# Summary: start ScummVM game engine (v2 version)
++# Maintainer: Loic Devulder <ldevulder@suse.com>
++
++use base 'opensusebasetest';
++use strict;
++use testapi;
++use utils 'assert_gui_app';
++
++sub run {
++    # With assert_gui_app, we can directly install and execute ScummVM!
++    assert_gui_app 'scummvm', install => 1, remain => 1;
++
++    # Wait for ScummVM to be started
++    assert_screen 'scummvm-main-menu';
++    save_screenshot;
++}
++
++1;
++# vim: set sw=4 et:
+diff --git a/tests/scummvm/test_game-fullscreen.pm b/tests/scummvm/test_game-fullscreen.pm
+new file mode 100644
+index 00000000..ea4cedb1
+--- /dev/null
++++ b/tests/scummvm/test_game-fullscreen.pm
+@@ -0,0 +1,83 @@
++# SUSE's openQA tests
++#
++# Copyright (c) 2018 SUSE LLC
++#
++# Copying and distribution of this file, with or without modification,
++# are permitted in any medium without royalty provided the copyright
++# notice and this notice are preserved.  This file is offered as-is,
++# without any warranty.
++
++# Summary: test the game in fullscreen mode
++# Maintainer: Loic Devulder <ldevulder@suse.com>
++
++use base 'opensusebasetest';
++use strict;
++use testapi;
++
++sub wrapper_mouse_set {
++    my ($x, $y)  = @_;
++    my $x_offset = 'TODO!';
++    my $y_offset = 'TODO!';
++
++    mouse_set $x+$x_offset, $y+$y_offset;
++}
++
++sub run {
++    my $timeout   = 400;    # Max waiting time
++    my $s_timeout = $timeout / 4;
++
++    # Start the game
++    wait_screen_change { assert_and_dclick 'scummvm-start-bass'; };
++
++    # If wanted, we can skip the intro
++    send_key 'esc' if get_var 'BASS_SKIP_INTRO';
++
++    # Wait for the main screen
++    # Big timeout, as we may need to wait for the intro to finish!
++    assert_screen 'scummvm-bass-main-screen', $timeout;
++    save_screenshot;
++
++    # Move the avatar, play the game, to show that openQA can do it!
++
++    # First part
++    wrapper_mouse_set 75, 235;
++    mouse_click 'right';
++    wait_still_screen;
++    wrapper_mouse_set 120, 30;
++    assert_screen 'scummvm-bass-item-screen';
++    wrapper_mouse_set 120, 60;
++    mouse_click 'right';
++    wait_still_screen;
++    wrapper_mouse_set 835, 215;
++    mouse_click;
++    assert_screen 'scummvm-bass-second-screen', $s_timeout;
++    save_screenshot;
++
++    # Second part
++    wrapper_mouse_set 190, 250;
++    mouse_click 'right';
++    wait_still_screen;
++    mouse_click;
++    assert_screen 'scummvm-bass-first-screen';
++    save_screenshot;
++
++    # Third part
++    wrapper_mouse_set 460, 470;
++    mouse_click;
++    wait_still_screen;
++    wrapper_mouse_set 815, 420;
++    mouse_click;
++    assert_screen 'scummvm-bass-third-screen';
++    save_screenshot;
++
++    # Close ScummVM
++    wait_screen_change { send_key 'f5'; };
++    assert_and_click 'scummvm-bass-quit';
++    assert_screen 'scummvm-bass-quit-screen';
++    assert_and_click 'scummvm-bass-confirm-quit';
++    assert_screen 'main-windows';
++    save_screenshot;
++}
++
++1;
++# vim: set sw=4 et:
+diff --git a/tests/scummvm/test_game.pm b/tests/scummvm/test_game.pm
+new file mode 100644
+index 00000000..677b6ce0
+--- /dev/null
++++ b/tests/scummvm/test_game.pm
+@@ -0,0 +1,75 @@
++# SUSE's openQA tests
++#
++# Copyright (c) 2018 SUSE LLC
++#
++# Copying and distribution of this file, with or without modification,
++# are permitted in any medium without royalty provided the copyright
++# notice and this notice are preserved.  This file is offered as-is,
++# without any warranty.
++
++# Summary: test the game
++# Maintainer: Loic Devulder <ldevulder@suse.com>
++
++use base 'opensusebasetest';
++use strict;
++use testapi;
++
++sub run {
++    my $timeout   = 400;    # Max waiting time
++    my $s_timeout = $timeout / 4;
++
++    # Start the game
++    wait_screen_change { assert_and_dclick 'scummvm-start-bass'; };
++
++    # If wanted, we can skip the intro
++    send_key 'esc' if get_var 'BASS_SKIP_INTRO';
++
++    # Wait for the main screen
++    # Big timeout, as we may need to wait for the intro to finish!
++    assert_screen 'scummvm-bass-main-screen', $timeout;
++    save_screenshot;
++
++    # Move the avatar, play the game, to show that openQA can do it!
++
++    # First part
++    mouse_set 75, 235;
++    mouse_click 'right';
++    wait_still_screen;
++    mouse_set 120, 30;
++    assert_screen 'scummvm-bass-item-screen';
++    mouse_set 120, 60;
++    mouse_click 'right';
++    wait_still_screen;
++    mouse_set 835, 215;
++    mouse_click;
++    assert_screen 'scummvm-bass-second-screen', $s_timeout;
++    save_screenshot;
++
++    # Second part
++    mouse_set 190, 250;
++    mouse_click 'right';
++    wait_still_screen;
++    mouse_click;
++    assert_screen 'scummvm-bass-first-screen';
++    save_screenshot;
++
++    # Third part
++    mouse_set 460, 470;
++    mouse_click;
++    wait_still_screen;
++    mouse_set 815, 420;
++    mouse_click;
++    assert_screen 'scummvm-bass-third-screen';
++    save_screenshot;
++
++    # Close ScummVM
++    wait_screen_change { send_key 'f5'; };
++    assert_and_click 'scummvm-bass-quit';
++    assert_screen 'scummvm-bass-quit-screen';
++    assert_and_click 'scummvm-bass-confirm-quit';
++    assert_screen 'main-windows';
++    save_screenshot;
++}
++
++1;
++# vim: set sw=4 et:
+-- 
+2.13.6
+

@@ -1,0 +1,22 @@
+if (get_var('SCUMMVM')) {
+    # ScummVM test - for fun!
+    boot_hdd_image;
+    loadtest "console/consoletest_setup";
+    loadtest "scummvm/disable_pkgkit" if !get_var('ALT_SCUMMVM_INSTALL');
+    loadtest "scummvm/install_game";
+    if (get_var('ALT_SCUMMVM_INSTALL')) {
+        loadtest "scummvm/start_scummvm_v2";
+    }
+    else {
+        loadtest "scummvm/install_scummvm";
+        loadtest "scummvm/start_scummvm";
+    }
+    loadtest "scummvm/add_game";
+    if (get_var('SCUMMVM_FULLSCREEN')) {
+        loadtest "scummvm/test_game-fullscreen";
+    }
+    else {
+        loadtest "scummvm/test_game";
+    }
+    loadtest "x11/shutdown";
+}
