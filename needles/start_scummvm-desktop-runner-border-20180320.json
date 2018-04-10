@@ -1,0 +1,23 @@
+{
+  "properties": [],
+  "tags": [
+    "desktop-runner-border",
+    "scummvm"
+  ],
+  "area": [
+    {
+      "xpos": 176,
+      "ypos": 30,
+      "width": 292,
+      "height": 83,
+      "type": "match"
+    },
+    {
+      "xpos": 510,
+      "ypos": 301,
+      "width": 114,
+      "height": 104,
+      "type": "match"
+    }
+  ]
+}

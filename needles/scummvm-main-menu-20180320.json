@@ -1,0 +1,22 @@
+{
+  "properties": [],
+  "tags": [
+    "scummvm-main-menu"
+  ],
+  "area": [
+    {
+      "xpos": 177,
+      "ypos": 32,
+      "width": 290,
+      "height": 83,
+      "type": "match"
+    },
+    {
+      "xpos": 510,
+      "ypos": 304,
+      "width": 113,
+      "height": 102,
+      "type": "match"
+    }
+  ]
+}

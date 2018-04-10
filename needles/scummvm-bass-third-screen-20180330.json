@@ -1,0 +1,36 @@
+{
+  "tags": [
+    "scummvm-bass-third-screen"
+  ],
+  "properties": [],
+  "area": [
+    {
+      "xpos": 149,
+      "ypos": 70,
+      "width": 130,
+      "height": 97,
+      "type": "match"
+    },
+    {
+      "xpos": 574,
+      "ypos": 173,
+      "width": 56,
+      "height": 49,
+      "type": "match"
+    },
+    {
+      "xpos": 342,
+      "ypos": 357,
+      "width": 136,
+      "height": 84,
+      "type": "match"
+    },
+    {
+      "xpos": 126,
+      "ypos": 264,
+      "width": 44,
+      "height": 76,
+      "type": "match"
+    }
+  ]
+}

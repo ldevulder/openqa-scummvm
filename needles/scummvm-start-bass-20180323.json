@@ -1,0 +1,15 @@
+{
+  "tags": [
+    "scummvm-start-bass"
+  ],
+  "properties": [],
+  "area": [
+    {
+      "xpos": 31,
+      "ypos": 149,
+      "width": 114,
+      "height": 13,
+      "type": "match"
+    }
+  ]
+}

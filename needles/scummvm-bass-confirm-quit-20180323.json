@@ -1,0 +1,15 @@
+{
+  "tags": [
+    "scummvm-bass-confirm-quit"
+  ],
+  "properties": [],
+  "area": [
+    {
+      "width": 85,
+      "xpos": 276,
+      "type": "match",
+      "ypos": 346,
+      "height": 57
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "properties": [],
+  "tags": [
+    "scummvm-override-graphics-settings"
+  ],
+  "area": [
+    {
+      "xpos": 69,
+      "ypos": 183,
+      "width": 186,
+      "height": 16,
+      "type": "match"
+    }
+  ]
+}

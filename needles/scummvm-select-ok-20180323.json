@@ -1,0 +1,15 @@
+{
+  "properties": [],
+  "tags": [
+    "scummvm-select-ok"
+  ],
+  "area": [
+    {
+      "xpos": 402,
+      "ypos": 378,
+      "width": 19,
+      "height": 10,
+      "type": "match"
+    }
+  ]
+}

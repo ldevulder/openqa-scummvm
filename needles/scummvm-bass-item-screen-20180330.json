@@ -1,0 +1,22 @@
+{
+  "area": [
+    {
+      "xpos": 23,
+      "ypos": 38,
+      "width": 48,
+      "height": 47,
+      "type": "match"
+    },
+    {
+      "xpos": 898,
+      "ypos": 41,
+      "width": 50,
+      "height": 45,
+      "type": "match"
+    }
+  ],
+  "tags": [
+    "scummvm-bass-item-screen"
+  ],
+  "properties": []
+}

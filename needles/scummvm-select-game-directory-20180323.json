@@ -1,0 +1,15 @@
+{
+  "area": [
+    {
+      "xpos": 39,
+      "ypos": 280,
+      "width": 44,
+      "height": 13,
+      "type": "match"
+    }
+  ],
+  "properties": [],
+  "tags": [
+    "scummvm-select-game-directory"
+  ]
+}

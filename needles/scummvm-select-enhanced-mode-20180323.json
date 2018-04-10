@@ -1,0 +1,15 @@
+{
+  "area": [
+    {
+      "xpos": 177,
+      "ypos": 326,
+      "width": 73,
+      "height": 10,
+      "type": "match"
+    }
+  ],
+  "tags": [
+    "scummvm-select-enhanced-mode"
+  ],
+  "properties": []
+}

@@ -1,0 +1,22 @@
+{
+  "tags": [
+    "scummvm-add-game"
+  ],
+  "properties": [],
+  "area": [
+    {
+      "xpos": 31,
+      "ypos": 146,
+      "width": 186,
+      "height": 16,
+      "type": "match"
+    },
+    {
+      "xpos": 472,
+      "ypos": 178,
+      "width": 24,
+      "height": 61,
+      "type": "match"
+    }
+  ]
+}

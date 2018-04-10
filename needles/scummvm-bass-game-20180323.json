@@ -1,0 +1,22 @@
+{
+  "properties": [],
+  "tags": [
+    "scummvm-bass-game"
+  ],
+  "area": [
+    {
+      "height": 12,
+      "ypos": 149,
+      "type": "match",
+      "xpos": 32,
+      "width": 114
+    },
+    {
+      "xpos": 179,
+      "ypos": 30,
+      "width": 289,
+      "height": 83,
+      "type": "match"
+    }
+  ]
+}

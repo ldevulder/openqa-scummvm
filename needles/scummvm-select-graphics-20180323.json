@@ -1,0 +1,15 @@
+{
+  "area": [
+    {
+      "xpos": 125,
+      "ypos": 145,
+      "width": 50,
+      "height": 17,
+      "type": "match"
+    }
+  ],
+  "tags": [
+    "scummvm-select-graphics"
+  ],
+  "properties": []
+}
